@@ -1,0 +1,10 @@
+venv
+deploy
+deploy_local
+node_modules
+*.pyc
+.idea
+*~
+.DS_Store
+*.egg-info
+lib
