@@ -70,9 +70,11 @@ def run_eaglelint_check(files,
                 zip = zipfile.ZipFile(stream)
                 for i in zip.infolist():
                     full_path = "{}/{}".format(filename, i.filename)
+                    if "__MACOSX" in full_path:
+                        continue
                     with zip.open(i.filename) as zf:
                         contents = zf.read()
-                        zip_contents[full_path] = StringIO.StringIO(contents)
+                        zip_contents[i.filename] = StringIO.StringIO(contents)
                 collect_files(zip_contents, strict=False)
             elif strict:
                 raise Exception("Illegal file type: {}".format(filename))
@@ -86,7 +88,7 @@ def run_eaglelint_check(files,
         for filename in files:
             try:
                 with open(filename + ".err", "r") as f:
-                    print "loading errors from {}".format(filename + ".err")
+                    print("loading errors from {}".format(filename + ".err"))
                     for l in f.readlines():
                         l = l.strip()
                         m = re.search("(^|\(|:)([0-9A-F]{8})\)?$", l)
@@ -117,7 +119,6 @@ def run_eaglelint_check(files,
             get_checker(l)(errors=errors, lbrs=lbrs.values(), fix=fix).check()
 
     if fix:
-        print brds.keys()
 
         for f in schs.values() + brds.values()+ lbrs.values():
             if not ext:
@@ -128,7 +129,6 @@ def run_eaglelint_check(files,
             base = f.get_filename()[:-4]
             suffix = f.get_filename()[-4:]
             name = base+n+suffix
-            print name
             if write:
                 f.write(name)
 
@@ -165,9 +165,9 @@ def main():
 
     if not args.quiet:
         for e in filter(lambda x: x.level == "Info", errors.get_errors()):
-            print e
+            print(e)
     for e in filter(lambda x: x.level != "Info", errors.get_errors()):
-        print u"{}".format(e)
+        print(u"{}".format(e))
 
     if args.strict:
         if len(filter(lambda x: x.level != "Info", errors.get_errors())):
