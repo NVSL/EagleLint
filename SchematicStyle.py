@@ -116,12 +116,12 @@ class SchematicLint(Checker):
             if part.get_deviceset() in checker_options.ground_device_sets_names:
                 net = pr.get_parent().get_parent()
                 if pr.get_pin() != net.get_name():
-                    self.warn("You have a {} ground symbol ({}) attached to the wrong net ({})".format(part.get_deviceset(), output_format(part), output_format(net)))
+                    self.warn("You have a {} ground symbol ({}) attached to {} intsead of {}.".format(part.get_deviceset(), output_format(part), output_format(net), pr.get_pin()))
 
             if part.get_deviceset() in checker_options.power_device_set_names:
                 net = pr.get_parent().get_parent()
                 if pr.get_pin() != net.get_name():
-                    self.warn("You have a {} power symbol ({}) attached to the wrong net ({})".format(part.get_deviceset(), output_format(part), output_format(net)))
+                    self.warn("You have a {} power symbol ({}) attached to {} instead of {}.".format(part.get_deviceset(), output_format(part), output_format(net), pr.get_pin()))
 
 
     def check_names(self):
