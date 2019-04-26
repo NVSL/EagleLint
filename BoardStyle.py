@@ -18,6 +18,7 @@ class BoardLint(Checker):
         self.check_outline()
         self.check_names()
         self.check_placement()
+        self.check_vias()
 
         LibraryLint(lbrs=Swoop.From(self.brd).get_libraries(),
                     errors=self.errors,
@@ -30,6 +31,13 @@ class BoardLint(Checker):
         x = int(round(part.get_x() * scale))
         y = int(round(part.get_y() * scale))
         return (x % grid) != 0 or (y % grid) != 0
+
+    def check_vias(self):
+        with self.errors.nest(self.brd.get_filename()):
+            for s in Swoop.From(self.brd.get_signals()):
+                for v in s.get_vias():
+                    if v.get_drill() > 0.8:
+                        self.warn("The via at ({},{}) on {} is too big ({}mm). You probably don't want vias larger than 0.8mm".format(v.get_x(), v.get_y(), output_format(s), v.get_drill()))
 
     def check_placement(self):
         with self.errors.nest(self.brd.get_filename()):

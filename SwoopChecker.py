@@ -31,8 +31,7 @@ checker_options = Bunch(
     high_current_min_width = mil_to_mm(10),
     rf_min_width = mil_to_mm(50),
     expected_regulated_decoupling_caps=7,
-    expected_battery_decoupling_caps=4,
-    expected_vin_decoupling_caps=1,
+    expected_battery_decoupling_caps=5,
     high_current_net_class_names=["HIGH_CURRENT", "HIGHCURRENT","HighAmps", "HIGH-I"],
     power_and_ground_names = ["VCC", "VDD", "3V3", "+3V3", "GND", "BAT_GND", "3V", "VBAT", "5V"],
     symbols_that_need_no_name = ["FRAME_B_L", "DOCFIELD"],
@@ -388,9 +387,9 @@ class Checker(object):
                 w2x1, w2y1, w2x2, w2y2 = w2.get_points()
 
                 if doIntersect(Point(w1x1, w1y1),
-                                                          Point(w1x2, w1y2),
-                                                          Point(w2x1, w2y1),
-                                                          Point(w2x2, w2y2)):
+                                Point(w1x2, w1y2),
+                                Point(w2x1, w2y1),
+                                Point(w2x2, w2y2)):
                     if get_net(w1) is not get_net(w2) and w1.get_layer() == w2.get_layer():
                         self.error(
                             "The segment of {w1} from ({w1x1}, {w1y1}) to ({w1x2}, {w1y2}) intersects with the segment of {w2} from ({w2x1}, {w2y1}) to ({w2x2}, {w2y2}).".format(
