@@ -1,6 +1,6 @@
 import re
 
-from SwoopChecker import Checker, NestedError, output_format
+from SwoopChecker import Checker, NestedError, output_format, checker_options
 from LibraryStyle import LibraryLint
 import Swoop
 import math
@@ -13,17 +13,57 @@ class BoardLint(Checker):
             return
 
         self.check_routing()
-        #self.check_attrs()
         self.check_libraries()
         self.check_outline()
         self.check_names()
         self.check_placement()
         self.check_vias()
+        self.check_pours()
+        self.check_displayed_attributes()
 
         LibraryLint(lbrs=Swoop.From(self.brd).get_libraries(),
                     errors=self.errors,
                     fix=self.fix,
                     options=self.options).check()
+
+    def check_pours(self):
+        with self.errors.nest(self.brd.get_filename()):
+
+            for p in Swoop.From(self.brd).get_signals().get_polygons():
+                if p.get_isolate() not in [0, 0.0, None]:
+                    self.warn("A pour in {} has non-zero 'isolate'.  This is unusual, and probably not what you want.".format(p.get_parent().get_name()))
+
+    def check_displayed_attributes(self):
+        with self.errors.nest(self.brd.get_filename()):
+            names = Swoop.From(self.brd).get_elements().get_attributes().with_name("NAME").with_display(True)
+            for t in names:
+                if t.get_size() < checker_options.silkscreen_min_size or t.get_ratio() != checker_options.silkscreen_ratio or t.get_font() not in checker_options.silkscreen_fonts:
+                    if False:#self.fix:
+                        t.set_size(checker_options.silkscreen_min_size).set_ratio(checker_options.silkscreen_ratio).set_font(
+                            checker_options.silkscreen_fonts[0])
+                    else:
+                        self.warn(
+                            u"'{}' in reference designator has wrong geometry (size={}mm, ratio={}%, font={}).  Should be {}mm, {}%, and one of these fonts that will render properly on the board during manufacturing: {}.".format(
+                                t.get_parent().get_name(),
+                                t.get_size(), t.get_ratio(), t.get_font(),
+                                checker_options.silkscreen_min_size,
+                                checker_options.silkscreen_ratio,
+                                ", ".join(checker_options.silkscreen_fonts)), inexcusable=True)
+
+            names = Swoop.From(self.brd).get_elements().get_attributes().with_name("VALUE").with_display(True)
+            for t in names:
+                if t.get_size() < checker_options.silkscreen_min_size or t.get_ratio() != checker_options.silkscreen_ratio or t.get_font() not in checker_options.silkscreen_fonts:
+                    if False:#self.fix:
+                        t.set_size(checker_options.silkscreen_min_size).set_ratio(checker_options.silkscreen_ratio).set_font(
+                            checker_options.silkscreen_fonts[0])
+                    else:
+                        self.warn(
+                            u"'{}' in value on board has wrong geometry (size={}mm, ratio={}%, font={}).  Should be {}mm, {}%, and one of these fonts that will render properly on the board during manufacturing: {}.".format(
+                                t.get_parent().get_name(),
+                                t.get_size(), t.get_ratio(), t.get_font(),
+                                checker_options.silkscreen_min_size,
+                                checker_options.silkscreen_ratio,
+                                ", ".join(checker_options.silkscreen_fonts)), inexcusable=True)
 
     def check_alignment(self, part, grid):
         scale = 10000
@@ -68,10 +108,14 @@ class BoardLint(Checker):
 
     def check_outline(self):
         with self.errors.nest(self.brd.get_filename()):
-            dims = Swoop.From(self.brd).get_plain_elements().without_type(Swoop.Hole).with_layer("Dimension")
+            dims = Swoop.From(self.brd).get_plain_elements().with_type(Swoop.Wire).with_layer("Dimension")
             self.info("Found {} lines in layer 'Dimension'".format(len(dims)))
             if dims.with_width(0).count():
                 self.error("Lines in 'Dimension' should have non-zero width.", inexcusable=True)
+
+            non_wire = Swoop.From(self.brd).get_plain_elements().without_type(Swoop.Hole).without_type(Swoop.Wire).with_layer("Dimension")
+            if len(non_wire):
+                self.warn("You things in your Dimension layer other than lines and arcs.  You probably don't want that.      ", inexcusable=True)
 
     def check_libraries(self):
         with self.errors.nest(self.brd.get_filename()):
@@ -95,12 +139,6 @@ class BoardLint(Checker):
                                     package.get_name(),
                                     library), inexcusable=True)
 
-    # I'm not sure why we are checking this.  Why do we require that the element have all the attribute tags?  Is it because the list has to match the library?
-    # def check_attrs(self):
-    #     for t in Swoop.From(self.brd).get_elements():
-    #         for attr in self.required_deviceset_attributes:
-    #             if not t.get_attribute(attr) or not t.get_attribute(attr).get_value():
-    #                 t.add_attribute(Swoop.Attribute().set_name(attr).set_value("Unknown").set_display("off").set_layer("Document"))
 
     def check_routing(self):
         with NestedError(self.errors, self.brd.get_filename()):

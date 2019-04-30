@@ -33,6 +33,7 @@ checker_options = Bunch(
     expected_regulated_decoupling_caps=7,
     expected_battery_decoupling_caps=5,
     high_current_net_class_names=["HIGH_CURRENT", "HIGHCURRENT","HighAmps", "HIGH-I"],
+    power_net_class_names=["PWR"],
     power_and_ground_names = ["VCC", "VDD", "3V3", "+3V3", "GND", "BAT_GND", "3V", "VBAT", "5V"],
     symbols_that_need_no_name = ["FRAME_B_L", "DOCFIELD"],
     ground_device_sets_names = ["GND", "BAT_GND"],
