@@ -128,7 +128,10 @@ class LibraryLint(Checker):
                                 self.warn(u"Attribute '{}' should be constant.".format(a), inexcusable=True)
 
     def check_package(self, p):
-        silkscreen_layers = ["tName", "bNames", "tPlace", "bPlace"]
+        silkscreen_layers = ["tName",  "tPlace", "tValues", "bPlace", "bNames", "bValues"]
+
+        #todo: Check for content in wierd layers.  Issue warnings
+        normally_empty_layers = ["bName",  "bPlace", "bValues", "bKeepout", "bCream", "bDocu"]
         elements = Swoop.From(p).get_drawing_elements()
         with NestedError(self.errors, p):
             dims = Swoop.From(p).get_drawing_elements().with_type(Swoop.Dimension).with_layer("Dimension")

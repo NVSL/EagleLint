@@ -442,6 +442,11 @@ def count_pins(part):
     return len(part.find_deviceset().get_gates()[0].find_symbol().get_pins())
 
 def bounding_box(items):
+    if isinstance(items, Swoop.From):
+        items = items.unpack()
+    elif not isinstance(items, list):
+        items = [items]
+
     bounds_points = reduce(lambda x,y: x+y, map(lambda x:x.get_bounds_points(), items), [])
     xs = map(lambda a: a[0], bounds_points)
     ys = map(lambda a: a[1], bounds_points)
@@ -451,6 +456,9 @@ def bounding_box_size(items):
     x1, y1, x2, y2 = bounding_box(items)
     return abs(x2 - x1), abs(y2 - y1)
 
+def bounding_box_area(items):
+    x,y = bounding_box_size(items)
+    return x * y
 
 class Error(object):
 
