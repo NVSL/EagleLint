@@ -37,8 +37,9 @@ class BoardLint(Checker):
         with self.errors.nest(self.brd.get_filename()):
             names = Swoop.From(self.brd).get_elements().get_attributes().with_name("NAME").with_display(True)
             for t in names:
-                if t.get_size() < checker_options.silkscreen_min_size or t.get_ratio() != checker_options.silkscreen_ratio or t.get_font() not in checker_options.silkscreen_fonts:
-                    if False:#self.fix:
+                #fixme The default value for ratio is not working right for attributes.  so check for != None
+                if t.get_size() < checker_options.silkscreen_min_size or not (t.get_ratio() == checker_options.silkscreen_ratio or t.get_ratio() == None) or t.get_font() not in checker_options.silkscreen_fonts:
+                    if False:#self.fix:1
                         t.set_size(checker_options.silkscreen_min_size).set_ratio(checker_options.silkscreen_ratio).set_font(
                             checker_options.silkscreen_fonts[0])
                     else:
@@ -50,9 +51,15 @@ class BoardLint(Checker):
                                 checker_options.silkscreen_ratio,
                                 ", ".join(checker_options.silkscreen_fonts)), inexcusable=True)
 
-            names = Swoop.From(self.brd).get_elements().get_attributes().with_name("VALUE").with_display(True)
-            for t in names:
-                if t.get_size() < checker_options.silkscreen_min_size or t.get_ratio() != checker_options.silkscreen_ratio or t.get_font() not in checker_options.silkscreen_fonts:
+            sizes = names.get_size().unique()
+
+            if len(sizes) > 1:
+                self.warn("Your reference designators are not all the same size.  I found these sizes: {}".format(", ".join(map(str,sizes))))
+
+            values = Swoop.From(self.brd).get_elements().get_attributes().with_name("VALUE").with_display(True)
+
+            for t in values:
+                if t.get_size() < checker_options.silkscreen_min_size or (t.get_ratio() != checker_options.silkscreen_ratio and t.get_ratio() != None)   or t.get_font() not in checker_options.silkscreen_fonts:
                     if False:#self.fix:
                         t.set_size(checker_options.silkscreen_min_size).set_ratio(checker_options.silkscreen_ratio).set_font(
                             checker_options.silkscreen_fonts[0])
@@ -64,6 +71,11 @@ class BoardLint(Checker):
                                 checker_options.silkscreen_min_size,
                                 checker_options.silkscreen_ratio,
                                 ", ".join(checker_options.silkscreen_fonts)), inexcusable=True)
+
+            sizes = values.get_size().unique()
+
+            if len(sizes) > 1:
+                self.warn("Your size labels are not all the same size.  I found these sizes: {}".format(", ".join(map(str,sizes))))
 
     def check_alignment(self, part, grid):
         scale = 10000
@@ -87,14 +99,15 @@ class BoardLint(Checker):
                     self.warn("Part {} at ({}, {}) is not not aligned to {}mm grid.".format(e.get_name(), e.get_x(), e.get_y(), grid))
 
                 for a in Swoop.From(e).get_attributes().with_display(True):
+                    if a.get_name() == "VALUE" and a.get_value() in ["", None]:  # If value is "" then it doesn't show up and there is really no way to fix it in eagle.
+                        continue
                     grid = 0.1
                     if self.check_alignment(a, grid):
                         if self.fix:
-                            print "fixing"
                             a.set_x(round(a.get_x()/grid) * grid)
                             a.set_y(round(a.get_y()/grid) * grid)
                         else:
-                            self.warn("Label '>{}' of {} at ({}, {}) in layer {} is not aligned to {}mm grid. ".format(a.get_name(), e.get_name(), a.get_x(), a.get_y(), a.get_layer(), grid ))
+                            self.warn("Label '{}' of {} at ({}, {}) in layer {} is not aligned to {}mm grid. ".format(a.get_name(), e.get_name(), a.get_x(), a.get_y(), a.get_layer(), grid ))
 
 
     def check_names(self):
