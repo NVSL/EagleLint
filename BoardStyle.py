@@ -123,12 +123,12 @@ class BoardLint(Checker):
         with self.errors.nest(self.brd.get_filename()):
             dims = Swoop.From(self.brd).get_plain_elements().with_type(Swoop.Wire).with_layer("Dimension")
             self.info("Found {} lines in layer 'Dimension'".format(len(dims)))
-            if dims.with_width(0).count():
-                self.error("Lines in 'Dimension' should have non-zero width.", inexcusable=True)
+            if dims.filtered_by(lambda x:x.get_width() < 0.01).count():
+                self.warn("Lines in 'Dimension' should have width >= 0.01mm.  Otherwise some CAM viewers have trouble displaying them the board outline.", inexcusable=True)
 
             non_wire = Swoop.From(self.brd).get_plain_elements().without_type(Swoop.Hole).without_type(Swoop.Wire).with_layer("Dimension")
             if len(non_wire):
-                self.warn("You things in your Dimension layer other than lines and arcs.  You probably don't want that.      ", inexcusable=True)
+                self.warn("You things in your Dimension layer other than lines and arcs.  You probably don't want that.", inexcusable=True)
 
     def check_libraries(self):
         with self.errors.nest(self.brd.get_filename()):
