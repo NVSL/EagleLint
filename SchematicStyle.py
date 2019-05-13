@@ -11,10 +11,11 @@ class SchematicLint(Checker):
         sch = self.sch
         lbr_list = self.lbrs
 
-        libs = {l.get_library().get_name(): l for l in lbr_list}
+        libs = {l.get_library().get_name().upper(): l for l in lbr_list}
+        print libs
 
         for part in sch.get_parts():
-            library = part.get_library()
+            library = part.get_library().upper()
             lib = libs.get(library)
             if lib is None:
                 with NestedError(errors, part):

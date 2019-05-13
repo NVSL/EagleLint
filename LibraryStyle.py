@@ -7,6 +7,7 @@ class LibraryLint(Checker):
     def __init__(self, *args, **kwargs):
         super(LibraryLint, self).__init__(*args, **kwargs)
         self.required_deviceset_attributes = ["CREATOR", "DIST", "DISTPN"]  # , "MFR", "MPN",
+
     def do_check(self):
         for library in self.lbrs:
             if isinstance(library, Swoop.LibraryFile):

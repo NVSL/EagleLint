@@ -134,10 +134,10 @@ class BoardLint(Checker):
         with self.errors.nest(self.brd.get_filename()):
             lbr_list = self.lbrs
 
-            libs = {l.get_library().get_name(): l for l in lbr_list}
+            libs = {l.get_library().get_name().upper(): l for l in lbr_list}
 
             for part in self.brd.get_elements():
-                library = part.get_library()
+                library = part.get_library().upper()
                 lib = libs.get(library)
                 if lib is None:
                     self.errors.record_warning(part, "Can't find library '{}' for part '{}'".format(library, part.get_name()))
