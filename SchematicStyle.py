@@ -1,7 +1,7 @@
 import math
 
 from LibraryStyle import LibraryLint
-from SwoopChecker import Checker, NestedError, checker_options, output_format
+from SwoopChecker import Checker, NestedError, checker_options, output_format, Pin, Net, Part, count_pins
 import Swoop
 
 class SchematicLint(Checker):
@@ -292,6 +292,17 @@ class SchematicLint(Checker):
                 if Swoop.From(self.sch).get_sheets().get_nets().get_segments().get_pinrefs().filtered_by(lambda x: x.get_part() == p.get_name()).count() in [0, 1]:
                     self.warn("Part {} has 1 or zero nets attached.".format(output_format(p)))
 
+    def check_connections(self):
+        parts = self.match([Part(select=lambda x: count_pins(x) == 2, description="a two-terminal device")])
+
+        for p in parts:
+            p = p[0]
+
+            for g in Swoop.From(p).find_deviceset().get_gates():
+                for n in Swoop.From(self.sch).get_sheets().get_nets():
+                    if Swoop.From(n).get_segments().get_pinrefs().with_part(p.get_name()).with_gate(g.get_name()).count() == 2:
+                        self.error("Both pins on {} are connected to the same net ({}).".format(output_format(p), output_format(n)))
+
 
     def do_check(self):
         if not self.sch:
@@ -304,4 +315,5 @@ class SchematicLint(Checker):
             self.check_nets()
             self.check_frame()
             self.check_parts()
+            self.check_connections()
             LibraryLint(lbrs=Swoop.From(self.sch).get_libraries(), errors=self.errors, fix=self.fix, options=self.options).check()

@@ -29,11 +29,11 @@ checker_options = Bunch(
     red_led_resistor = "SMD-2012-0805-330",
     max_clock_net_turns = 11,
     high_current_min_width = mil_to_mm(10),
-    rf_min_width = mil_to_mm(50),
+    rf_min_width = mil_to_mm(40),
     expected_regulated_decoupling_caps=7,
-    expected_battery_decoupling_caps=5,
+    expected_battery_decoupling_caps=2,#5,
     high_current_net_class_names=["HIGH_CURRENT", "HIGHCURRENT","HighAmps", "HIGH-I"],
-    power_net_class_names=["PWR"],
+    power_net_class_names=["PWR", "pwr"],
     power_and_ground_names = ["VCC", "VDD", "3V3", "+3V3", "GND", "BAT_GND", "3V", "VBAT", "5V"],
     symbols_that_need_no_name = ["FRAME_B_L", "DOCFIELD"],
     ground_device_sets_names = ["GND", "BAT_GND"],
@@ -76,7 +76,7 @@ class ChainLink(object):
 class Pin(ChainLink):
     def __init__(self, name=None, select=None, description=None):
         super(ChainLink, self).__init__()
-        self.name = name
+        self.name = listify(name)
         self.select = select
         self.description = description
 
@@ -89,7 +89,7 @@ class Pin(ChainLink):
 
     def get_string(self):
         if self.name:
-            return "{}".format(self.name)
+            return "|".join(self.name)
         elif self.select:
             return "{}".format(self.description if self.description else "custom")
         else:
@@ -99,7 +99,7 @@ class Pin(ChainLink):
         return "<span class='swoop-lint-pin'>{}</span>".format(self.get_string())
 
     def match(self, pin):
-        return all([not self.name or self.name == pin.get_pin(),
+        return all([not self.name or pin.get_pin() in self.name,
                     not self.select or self.select(pin)])
 
 
@@ -109,7 +109,7 @@ def listify(l):
     return l if isinstance(l, list) else [l]
 
 class Part(ChainLink):
-    def __init__(self, name=None, longname=None, deviceset=None, device=None, select=None, part=None, description=None):
+    def __init__(self, name=None, longname=None, deviceset=None, device=None, select=None, part=None, description=None, value=None):
         super(ChainLink, self).__init__()
 
         self.name = listify(name)
@@ -119,6 +119,7 @@ class Part(ChainLink):
         self.part = listify(part)
         self.description = description
         self.select = select
+        self.value = listify(value)
 
     def get_string(self):
         if self.name:
@@ -149,9 +150,10 @@ class Part(ChainLink):
     def match(self, part):
         return all([not self.part or part in self.part,
                     not self.longname or part.get_deviceset() + part.get_device() in self.longname,
-                    not self.deviceset or  part.get_deviceset() in self.deviceset,
+                    not self.deviceset or part.get_deviceset() in self.deviceset,
                     not self.device or part.get_device() in self.device,
-                    not self.select or self.select(part)])
+                    not self.select or self.select(part),
+                    not self.value or (part.get_value() and part.get_value().upper() in map(lambda x:x.upper(), self.value))])
 
 
 class Net(ChainLink):

@@ -94,7 +94,7 @@ class BoardLint(Checker):
     def check_placement(self):
         with self.errors.nest(self.brd.get_filename()):
             for e in Swoop.From(self.brd).get_elements():
-                grid = 1.0
+                grid = 0.5
                 if self.check_alignment(e, grid):
                     self.warn("Part {} at ({}, {}) is not not aligned to {}mm grid.".format(e.get_name(), e.get_x(), e.get_y(), grid))
 
