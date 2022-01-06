@@ -34,8 +34,9 @@ class SchematicLint(Checker):
                             symbol = lib.get_library().get_symbol(s.get_name())
                             if not symbol:
                                 self.warn(u"Symbol is not in library {}".format(library))
-                            elif not s.is_equal(symbol):
-                                self.warn(u"Symbol doesn't match symbol in library '{}'.  You need to update the libraries in your schematic: 'Library->Update...' or 'Library->Update All'".format(library))
+# DISABLED DUe to FUsion360
+#                            elif not s.is_equal(symbol):
+#                                self.warn(u"Symbol doesn't match symbol in library '{}'.  You need to update the libraries in your schematic: 'Library->Update...' or 'Library->Update All'".format(library))
 
                     pkgs = Swoop.From(sch_deviceset).get_devices().find_package().unique()
                     for p in pkgs:
@@ -43,8 +44,9 @@ class SchematicLint(Checker):
                             package = lib.get_library().get_package(p.get_name())
                             if not package:
                                 self.warn(u"Package is not in library {}".format(library))
-                            elif not p.is_equal(package):
-                                self.warn(u"Package doesn't match package in library '{}'.  You need to update the libraries in your schematic: 'Library->Update...' or 'Library->Update All'".format(library))
+                                # DISABLED DUe to FUsion360
+#                            elif not p.is_equal(package):
+#                                self.warn(u"Package doesn't match package in library '{}'.  You need to update the libraries in your schematic: 'Library->Update...' or 'Library->Update All'".format(library))
 
                     if lib_deviceset is None:
                         errors.record(None,
@@ -60,20 +62,26 @@ class SchematicLint(Checker):
                             else:
                                 try:
                                     if not sch_device.is_equal(lib_device):
-                                        errors.record(None, "Variant '{}' is different in library '{}'.  You need to update the libraries in your schematic: 'Library->Update...' or 'Library->Update All'".format(
-                                            sch_device.get_name(), library))
+                                        pass
+                                        # DISABLED DUe to FUsion360
+                                        #errors.record(None, "Variant '{}' is different in library '{}'.  You need to update the libraries in your schematic: 'Library->Update...' or 'Library->Update All'".format(
+                                        #    sch_device.get_name(), library))
 
                                     sch_technology = part.find_technology()
                                     with NestedError(errors, sch_technology):
                                         lib_technology = lib_device.get_technology(sch_technology.get_name())
                                         if lib_technology is None:
-                                            errors.record(None, "Technology '{}' is not in library '{}'.  You need to update the libraries in your schematic: 'Library->Update...' or 'Library->Update All'".format(
-                                                sch_technology.get_name(), library))
+                                            pass
+                                            # DISABLED DUe to FUsion360
+                                            #errors.record(None, "Technology '{}' is not in library '{}'.  You need to update the libraries in your schematic: 'Library->Update...' or 'Library->Update All'".format(
+                                            #    sch_technology.get_name(), library))
                                         else:
                                             if not sch_technology.is_equal(lib_technology):
-                                                errors.record(None,
-                                                              "Attributes for variant '{}' are different in library '{}'. You need to update the libraries in your schematic: 'Library->Update...' or 'Library->Update All'".format(
-                                                                  sch_device.get_name(), library))
+                                                pass
+                                                # DISABLED DUe to FUsion360
+                                                #errors.record(None,
+                                                #              "Attributes for variant '{}' are different in library '{}'. You need to update the libraries in your schematic: 'Library->Update...' or 'Library->Update All'".format(
+                                                #                 sch_device.get_name(), library))
                                 except UnicodeEncodeError:
                                     self.warn(
                                         "Got unicode decode error on {} in {}".format(sch_device.get_name(), library))

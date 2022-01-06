@@ -382,18 +382,19 @@ class Checker(object):
         else:
             get_net = lambda x: x.get_parent()
 
-        for (i, w1) in enumerate(sorted(routed_wires)):
+        wires = enumerate(sorted(routed_wires))
+        for (i, w1) in wires:
             w1x1, w1y1, w1x2, w1y2 = w1.get_points()
-            for (j, w2) in enumerate(sorted(routed_wires)):
+            for (j, w2) in wires:
                 if j <= i:
                     continue
-                w2x1, w2y1, w2x2, w2y2 = w2.get_points()
 
-                if doIntersect(Point(w1x1, w1y1),
-                                Point(w1x2, w1y2),
-                                Point(w2x1, w2y1),
-                                Point(w2x2, w2y2)):
-                    if get_net(w1) is not get_net(w2) and w1.get_layer() == w2.get_layer():
+                if get_net(w1) is not get_net(w2) and w1.get_layer() == w2.get_layer():
+                    w2x1, w2y1, w2x2, w2y2 = w2.get_points()
+                    if doIntersect(Point(w1x1, w1y1),
+                                   Point(w1x2, w1y2),
+                                   Point(w2x1, w2y1),
+                                   Point(w2x2, w2y2)):
                         self.error(
                             "The segment of {w1} from ({w1x1}, {w1y1}) to ({w1x2}, {w1y2}) intersects with the segment of {w2} from ({w2x1}, {w2y1}) to ({w2x2}, {w2y2}).".format(
                                 w1=output_format(get_net(w1)),
@@ -441,7 +442,12 @@ def CheckSet(checkers):
     return C
 
 def count_pins(part):
-    return len(part.find_deviceset().get_gates()[0].find_symbol().get_pins())
+
+    gates = part.find_deviceset().get_gates()
+    if len(gates) == 0:
+        return 0
+    else:
+        return len(gates[0].find_symbol().get_pins())
 
 def bounding_box(items):
     if isinstance(items, Swoop.From):

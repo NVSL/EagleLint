@@ -9,6 +9,7 @@ from SchematicStyle import SchematicLint
 import zipfile
 import importlib
 import StringIO
+import logging as log
 
 
 def lint_lbr(errors, lbr, fix=False):
@@ -56,6 +57,7 @@ def run_eaglelint_check(files,
 
     def collect_files(file_list, strict=True):
         for (filename, stream) in file_list.items():
+            log.info("opening {}".format(filename))
             if filename[-3:] == "sch":
                 sch = Swoop.SchematicFile.from_stream(Swoop.SchematicFile, stream, filename=filename)
                 schs[filename] = sch
@@ -149,6 +151,7 @@ def main():
     parser.add_argument("--quiet", action="store_true", help="Supress non-errors")
     parser.add_argument("--html", action="store_true", help="output html intsead of txt")
     parser.add_argument("--files", nargs="+", help="Files to lint")
+    parser.add_argument("--force", action="store_true", help="Force success regardless of errors.")
     args = parser.parse_args()
 
     if not args.html:
@@ -176,7 +179,7 @@ def main():
             sys.exit(0)
 
     else:
-        if len(filter(lambda x: x.level == "Error", errors.get_errors())):
+        if len(filter(lambda x: x.level == "Error", errors.get_errors())) and not args.force:
             sys.exit(1)
         else:
             sys.exit(0)

@@ -126,9 +126,9 @@ class BoardLint(Checker):
             if dims.filtered_by(lambda x:x.get_width() < 0.01).count():
                 self.warn("Lines in 'Dimension' should have width >= 0.01mm.  Otherwise some CAM viewers have trouble displaying them the board outline.", inexcusable=True)
 
-            non_wire = Swoop.From(self.brd).get_plain_elements().without_type(Swoop.Hole).without_type(Swoop.Wire).with_layer("Dimension")
+            non_wire = Swoop.From(self.brd).get_plain_elements().without_type(Swoop.Hole).without_type(Swoop.Wire).without_type(Swoop.Circle).with_layer("Dimension")
             if len(non_wire):
-                self.warn("You things in your Dimension layer other than lines and arcs.  You probably don't want that.", inexcusable=True)
+                self.warn("You things in your Dimension layer other than lines, arcs, and circles.  You probably don't want that.", inexcusable=True)
 
     def check_libraries(self):
         with self.errors.nest(self.brd.get_filename()):
@@ -147,10 +147,12 @@ class BoardLint(Checker):
                         if not package:
                             self.warn(u"Can't find package {} in library {}".format(part.get_package(), lib.get_library().get_name()))
                         elif not part.find_package().is_equal(package):
-                            self.warn(
-                                u"Package {} doesn't match package in library '{}'.  You need to update the libraries in your board: 'Library->Update...' or 'Library->Update All'".format(
-                                    package.get_name(),
-                                    library), inexcusable=True)
+                            pass
+                            # DISABLED DUe to FUsion360
+                            #self.warn(
+                             #   u"Package {} doesn't match package in library '{}'.  You need to update the libraries in your board: 'Library->Update...' or 'Library->Update All'".format(
+                             #       package.get_name(),
+                             #       library), inexcusable=True)
 
 
     def check_routing(self):
